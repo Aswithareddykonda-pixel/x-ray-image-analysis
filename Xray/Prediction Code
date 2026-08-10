@@ -1,0 +1,60 @@
+import tensorflow as tf
+import numpy as np
+from tensorflow.keras.preprocessing import image
+import sys
+import os
+
+MODEL_PATH = "models/xray_model.keras"
+
+IMG_SIZE = 224
+
+# Load model
+model = tf.keras.models.load_model(MODEL_PATH)
+
+
+def predict_xray(image_path):
+
+    if not os.path.exists(image_path):
+        print("Image not found!")
+        return
+
+    # Load image
+    img = image.load_img(
+        image_path,
+        target_size=(IMG_SIZE, IMG_SIZE)
+    )
+
+    # Convert to array
+    img_array = image.img_to_array(img)
+
+    # Normalize
+    img_array = img_array / 255.0
+
+    # Add batch dimension
+    img_array = np.expand_dims(img_array, axis=0)
+
+    # Prediction
+    prediction = model.predict(img_array, verbose=0)[0][0]
+
+    if prediction >= 0.5:
+        result = "PNEUMONIA"
+        confidence = prediction * 100
+    else:
+        result = "NORMAL"
+        confidence = (1 - prediction) * 100
+
+    print("\n-----------------------------")
+    print("      X-RAY ANALYSIS")
+    print("-----------------------------")
+    print(f"Prediction : {result}")
+    print(f"Confidence : {confidence:.2f}%")
+    print("-----------------------------")
+
+
+if __name__ == "__main__":
+
+    if len(sys.argv) < 2:
+        print("Usage:")
+        print("python predict.py path/to/xray.jpg")
+    else:
+        predict_xray(sys.argv[1])

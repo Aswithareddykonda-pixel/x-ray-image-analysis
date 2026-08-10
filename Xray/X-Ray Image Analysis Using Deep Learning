@@ -1,0 +1,8 @@
+Project idea
+
+The system takes a chest X-ray image as input and uses a Convolutional Neural Network (CNN) to classify it as:
+
+NORMAL
+PNEUMONIA
+
+The project also displays the prediction confidence and can be extended to multiple diseases.

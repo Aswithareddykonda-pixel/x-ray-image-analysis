@@ -1,0 +1,137 @@
+import tensorflow as tf
+from tensorflow.keras import layers, models
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+import matplotlib.pyplot as plt
+import os
+
+# Image settings
+IMG_SIZE = 224
+BATCH_SIZE = 32
+EPOCHS = 10
+
+TRAIN_DIR = "dataset/train"
+VAL_DIR = "dataset/validation"
+TEST_DIR = "dataset/test"
+
+# Data augmentation
+train_datagen = ImageDataGenerator(
+    rescale=1.0 / 255,
+    rotation_range=10,
+    zoom_range=0.1,
+    width_shift_range=0.1,
+    height_shift_range=0.1,
+    horizontal_flip=True
+)
+
+val_datagen = ImageDataGenerator(rescale=1.0 / 255)
+test_datagen = ImageDataGenerator(rescale=1.0 / 255)
+
+# Load training images
+train_data = train_datagen.flow_from_directory(
+    TRAIN_DIR,
+    target_size=(IMG_SIZE, IMG_SIZE),
+    batch_size=BATCH_SIZE,
+    class_mode="binary"
+)
+
+# Load validation images
+val_data = val_datagen.flow_from_directory(
+    VAL_DIR,
+    target_size=(IMG_SIZE, IMG_SIZE),
+    batch_size=BATCH_SIZE,
+    class_mode="binary"
+)
+
+# Load test images
+test_data = test_datagen.flow_from_directory(
+    TEST_DIR,
+    target_size=(IMG_SIZE, IMG_SIZE),
+    batch_size=BATCH_SIZE,
+    class_mode="binary",
+    shuffle=False
+)
+
+print("Class mapping:")
+print(train_data.class_indices)
+
+# Build CNN
+model = models.Sequential([
+    layers.Input(shape=(IMG_SIZE, IMG_SIZE, 3)),
+
+    layers.Conv2D(32, (3, 3), activation="relu"),
+    layers.MaxPooling2D(2, 2),
+
+    layers.Conv2D(64, (3, 3), activation="relu"),
+    layers.MaxPooling2D(2, 2),
+
+    layers.Conv2D(128, (3, 3), activation="relu"),
+    layers.MaxPooling2D(2, 2),
+
+    layers.Conv2D(128, (3, 3), activation="relu"),
+    layers.MaxPooling2D(2, 2),
+
+    layers.Flatten(),
+
+    layers.Dense(128, activation="relu"),
+    layers.Dropout(0.5),
+
+    layers.Dense(1, activation="sigmoid")
+])
+
+# Compile
+model.compile(
+    optimizer="adam",
+    loss="binary_crossentropy",
+    metrics=["accuracy"]
+)
+
+model.summary()
+
+# Train
+history = model.fit(
+    train_data,
+    validation_data=val_data,
+    epochs=EPOCHS
+)
+
+# Create models folder
+os.makedirs("models", exist_ok=True)
+
+# Save model
+model.save("models/xray_model.keras")
+
+print("\nModel saved successfully!")
+
+# Evaluate
+loss, accuracy = model.evaluate(test_data)
+
+print(f"\nTest Loss: {loss:.4f}")
+print(f"Test Accuracy: {accuracy:.4f}")
+
+# Plot accuracy
+plt.figure(figsize=(8, 5))
+
+plt.plot(history.history["accuracy"], label="Training Accuracy")
+plt.plot(history.history["val_accuracy"], label="Validation Accuracy")
+
+plt.title("Training and Validation Accuracy")
+plt.xlabel("Epoch")
+plt.ylabel("Accuracy")
+plt.legend()
+
+plt.savefig("accuracy_graph.png")
+plt.show()
+
+# Plot loss
+plt.figure(figsize=(8, 5))
+
+plt.plot(history.history["loss"], label="Training Loss")
+plt.plot(history.history["val_loss"], label="Validation Loss")
+
+plt.title("Training and Validation Loss")
+plt.xlabel("Epoch")
+plt.ylabel("Loss")
+plt.legend()
+
+plt.savefig("loss_graph.png")
+plt.show()

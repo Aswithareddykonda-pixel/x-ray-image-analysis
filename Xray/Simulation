@@ -1,0 +1,56 @@
+                 ┌────────────────────┐
+                 │   X-Ray Image      │
+                 │      Input         │
+                 └─────────┬──────────┘
+                           │
+                           ▼
+                 ┌────────────────────┐
+                 │ Image Preprocessing│
+                 │ Resize + Normalize │
+                 └─────────┬──────────┘
+                           │
+                           ▼
+                 ┌────────────────────┐
+                 │       CNN          │
+                 │ Feature Extraction │
+                 └─────────┬──────────┘
+                           │
+                           ▼
+                 ┌────────────────────┐
+                 │ Classification     │
+                 └─────────┬──────────┘
+                           │
+                    ┌──────┴──────┐
+                    ▼             ▼
+                NORMAL       PNEUMONIA
+                Example simulation
+
+Input:
+
+Chest X-Ray Image
+
+↓
+
+Preprocessing:
+
+224 × 224 pixels
+Pixel normalization
+
+↓
+
+CNN:
+
+Convolution
+     ↓
+Pooling
+     ↓
+Feature extraction
+     ↓
+Dense layers
+
+↓
+
+Output:
+
+Prediction: NORMAL
+Confidence: 91.35%
